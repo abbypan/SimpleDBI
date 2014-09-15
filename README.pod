@@ -47,7 +47,7 @@ support mysql
     $mysql->load_table(
         $test_data, # or $test_file, 
         table   => 'testtable',
-        fields  => [qw/id name/],
+        field  => [qw/id name/],
 
         #db  => 'otherdb',
         #charset => 'utf8',

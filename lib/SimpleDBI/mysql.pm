@@ -6,17 +6,16 @@ use DBI;
 use File::Temp qw/tempfile/;
 use SimpleR::Reshape;
 
-our $DEFAULT_SEP = ',';
-sub new {
-    my ($self, %opt) = @_;
-
-    my $dbh = connect_db(%opt);
-
-    bless { %opt, dbh => $dbh }, __PACKAGE__;
-}
+#sub new {
+#    my ($self, %opt) = @_;
+#
+#    my $dbh = connect_db(%opt);
+#
+#    bless { %opt, dbh => $dbh }, __PACKAGE__;
+#}
 
 sub connect_db {
-    my (%opt) = @_;
+    my ($self, %opt) = @_;
 
     my %default_opt = (
         mysql_local_infile    => 1,
@@ -32,13 +31,12 @@ sub connect_db {
         { 'RaiseError' => 0, PrintError => 1, mysql_enable_utf8=> $opt{enable_utf8} // 1,  } ), 
           or die $DBI::errstr;
 
-
     return $dbh;
 }
 
 sub query_db {
     my ( $self, $sql, %opt ) = @_;
-    $opt{sep} ||= $DEFAULT_SEP;
+    #$opt{sep} ||= $DEFAULT_SEP;
     $opt{attr} ||= undef, 
     $opt{bind_values} ||= [];
     $opt{result_type} ||=
@@ -97,6 +95,7 @@ sub load_table {
     fields terminated by '$opt{sep}'
     lines terminated by '\\n'
     ($field_str);];
+    print $load_sql, "\n";
 
     $self->{dbh}->do($load_sql);
 }

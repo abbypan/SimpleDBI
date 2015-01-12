@@ -8,15 +8,30 @@ L<SimpleDBI>  some function base DBI
 
 support mysql
 
+=head1 TOOL
+
+=head2 query_db.pl
+
+query_db.pl -t [数据库类型] -h [主机] -u [用户] -p [密码] -P [端口] -d [数据库] -e [sql命令] -f [输出文件名] -s [分隔符] -c [数据库编码] 
+
+query_db.pl -t mysql -h localhost -u someusr -p somepasswd -d somedb -e 'select * from sometable limit 20' -f some.csv
+
+=head2  load_table.pl
+
+query_db.pl -t [数据库类型] -h [主机] -u [用户] -p [密码] -P [端口] -d [数据库] -T [数据表] -f [导入文件名] -F [列名] -R [是否覆盖写入] -s [分隔符] -c [数据库编码] 
+
+load_table.pl -t mysql -h localhost -u someusr -p somepasswd -d somedb -T sometable -f some.csv -F column_a,column_b -R 1 -s ','
+
 =head1 FUNCTION
 
 =head2 new
 
-    use SimpleDBI::mysql;
+    use SimpleDBI;
     use Encode;
     use utf8;
 
-    my $mysql = SimpleDBI::mysql->new(
+    my $dbi = SimpleDBI->new(
+        type => 'mysql', 
         db     => 'testdb',
         host   => '127.0.0.1',
         usr    => 'someusr',
@@ -26,7 +41,7 @@ support mysql
 
 =head2 query_db
 
-    my $data = $mysql->query_db('select * from sometable limit 2', 
+    my $data = $dbi->query_db('select * from sometable limit 2', 
     result_type => 'arrayref',  # arrayref, hashref, file
 
     #attr => ..., # sql query attr, 
@@ -44,7 +59,7 @@ support mysql
 
     my $test_file = 'xxx.txt';
     my $test_data = [ [qw/1 测试/], [qw/2 无聊/], ];
-    $mysql->load_table(
+    $dbi->load_table(
         $test_data, # or $test_file, 
         table   => 'testtable',
         field  => [qw/id name/],

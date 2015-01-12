@@ -14,7 +14,7 @@ support mysql
 
 export data from database, write into csv file:  导出数据，写入csv文件
 
-    query_db.pl -t mysql -h localhost -u someusr -p somepasswd -d somedb -e 'select * from sometable limit 20' -f some.csv
+query_db.pl -t mysql -h localhost -u someusr -p somepasswd -d somedb -e 'select * from sometable limit 20' -f some.csv
 
     -e  sql command, 待执行的sql命令
 
@@ -30,6 +30,8 @@ export data from database, write into csv file:  导出数据，写入csv文件
 
 
 =head2  load_table.pl
+
+load csv data into database : 把csv里的数据导入指定数据库表
 
 load_table.pl -t mysql -h localhost -u someusr -p somepasswd -d somedb -T sometable -f some.csv -F column_a,column_b -R 1 -s ','
 

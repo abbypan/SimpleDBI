@@ -12,6 +12,7 @@ GetOptions (\%h,
     'file|f=s', 
     'sep|s=s', 
     'charset|c=s', 
+    'write_head|H=i', 
 );
 
 my $dbi = SimpleDBI->new(%h);

@@ -21,14 +21,14 @@ sub connect_db {
         mysql_local_infile    => 1,
         mysql_connect_timeout => 14400,
         port                  => $opt{port} || 3306,
-        host                  => $opt{host} || 'localhost',
+        host                  => $opt{host},
         database              => $opt{db},
     );
     my $conn_str =
       join( ";", map { "$_=$default_opt{$_}" } keys(%default_opt) );
 
     my $dbh = DBI->connect( "DBI:mysql:$conn_str", $opt{usr}, $opt{passwd},
-        { 'RaiseError' => 0, PrintError => 1, mysql_enable_utf8=> $opt{enable_utf8} // 1,  } ), 
+        { 'RaiseError' => 0, PrintError => 1, mysql_enable_utf8=> $opt{enable_utf8} ,  } ), 
           or die $DBI::errstr;
 
     return $dbh;
@@ -36,7 +36,6 @@ sub connect_db {
 
 sub query_db {
     my ( $self, $sql, %opt ) = @_;
-    #$opt{sep} ||= $DEFAULT_SEP;
     $opt{attr} ||= undef, 
     $opt{bind_values} ||= [];
     $opt{result_type} ||=
@@ -47,7 +46,13 @@ sub query_db {
     my $sth = $self->{dbh}->prepare( $sql, $opt{attr} );
     $sth->execute( @{ $opt{bind_values} } );
 
-    return $sth->fetchall_arrayref if ( $opt{result_type} eq 'arrayref' );
+    my $header = $sth->{NAME};
+
+    if ( $opt{result_type} eq 'arrayref' ){
+        my $data = $sth->fetchall_arrayref ;
+        unshift @$data, $header if($opt{write_head});
+        return  $data;
+    }
 
     if ( $opt{result_type} eq 'hashref' ) {
         $opt{hash_key} ||= [];
@@ -56,6 +61,9 @@ sub query_db {
 
     if ( $opt{result_type} eq 'file' ) {
         open my $fh, ">:utf8", $opt{file};
+        if($opt{write_head}){
+            print $fh join( $opt{sep}, @$header ), "\n";
+        }
         while ( my @row = $sth->fetchrow_array ) {
             print $fh join( $opt{sep}, @row ), "\n";
         }
@@ -82,20 +90,31 @@ sub load_table {
             charset => $opt{charset},
         );
     }
-    $file = quotemeta($file);
 
     my $replace_flag = $opt{replace} ? 'REPLACE' : '';
     my $set_charset =
       ( $opt{charset} eq 'utf8' ) ? 'character set UTF8' : '';
-    my $field_str = join( ", ", @{ $opt{field} } );
 
-    my $load_sql = qq[load data local infile '$file' 
+      if(!$opt{field}){
+          open my $fh, "<:$opt{charset}", $file;
+          my $s =<$fh>;
+          close $fh;
+          $s=~s/^\s+|\s+$//sg;
+          $opt{field} = [ split $opt{sep}, $s ];
+          $opt{skip_head} = 1;
+      }
+      my $field_str = join( ", ", @{ $opt{field} } );
+      my $ignore_str = $opt{skip_head} ? 'IGNORE 1 LINES' : '';
+
+    my $file_s = quotemeta($file);
+    my $load_sql = qq[load data local infile '$file_s' 
     $replace_flag into table $opt{db}.$opt{table}
     $set_charset
     fields terminated by '$opt{sep}'
     lines terminated by '\\n'
-    ($field_str);];
-    print $load_sql, "\n";
+    $ignore_str
+    ($field_str)
+    ;];
 
     $self->{dbh}->do($load_sql);
 }

@@ -58,6 +58,8 @@ load_table.pl -t mysql -h localhost -u someusr -p somepasswd -d somedb -T someta
         #enable_utf8 => 1, 
     );
 
+    # $dbi->{dbh} is the DBI handle
+
 =head2 query_db
 
     my $data = $dbi->query_db('select * from sometable limit 2', 

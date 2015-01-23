@@ -76,7 +76,7 @@ sub query_db {
 
 sub load_table {
     my ( $self, $data, %opt ) = @_;
-    $opt{sep} ||= $DEFAULT_SEP;
+    $opt{sep} ||= $self->{sep};
     $opt{db} ||= $self->{db};
     $opt{charset} ||= $self->{charset};
 
